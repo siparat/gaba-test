@@ -42,7 +42,7 @@ export default [
 				'warn',
 				{
 					ignoreRestSiblings: true,
-					varsIgnorePattern: '_',
+					varsIgnorePattern: '_^',
 					caughtErrors: 'none'
 				}
 			],

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import { DatabaseService } from '../common/database/database.service';
 import { CreateCouponRequestDto, CreateCouponResponseDto } from './dto/create-coupon.dto';
+import { UpdateCouponRequestDto } from './dto/update-coupon.dto';
 import { CodeConflictException } from './exceptions/code-conflict.exception';
 import { CouponRepositoryMapper } from './mappers/coupon-repository.mapper';
 
@@ -20,6 +21,24 @@ export class CouponService {
 
 		const coupon = await this.database.coupon.create({ data: CouponRepositoryMapper.toCreate(dto) });
 		this.logger.log('Купон создан', { couponId: coupon.id, code: coupon.code, discount: coupon.discount });
+		return coupon;
+	}
+
+	async update(id: string, dto: UpdateCouponRequestDto): Promise<CreateCouponResponseDto> {
+		if (dto.code) {
+			const isAlreadyWithCode = await this.database.coupon.findUnique({ where: { code: dto.code } });
+			if (isAlreadyWithCode && isAlreadyWithCode.id !== id) {
+				throw new CodeConflictException(dto.code);
+			}
+		}
+
+		const coupon = await this.database.coupon.update({ where: { id }, data: CouponRepositoryMapper.toUpdate(dto) });
+		this.logger.log('Купон обновлен', {
+			newData: dto,
+			couponId: id,
+			code: coupon.code,
+			discount: coupon.discount
+		});
 		return coupon;
 	}
 }

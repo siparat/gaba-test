@@ -11,6 +11,27 @@ services:
       - app
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user", "-d", "main"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    networks:
+      - app
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
 
 networks:
   app:
@@ -18,3 +39,5 @@ networks:
 
 volumes:
   db_data:
+
+  redisdata:

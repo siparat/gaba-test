@@ -69,6 +69,10 @@ export default [
 					format: ['PascalCase']
 				},
 				{
+					selector: 'import',
+					format: ['camelCase', 'UPPER_CASE', 'PascalCase']
+				},
+				{
 					selector: 'interface',
 					format: ['PascalCase'],
 					custom: {

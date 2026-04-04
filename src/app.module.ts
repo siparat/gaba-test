@@ -6,10 +6,13 @@ import { AppController } from './app.controller';
 import { environmentSchema } from './common/schemas/environment.schema';
 import { getLoggerConfig } from './configs/logger.config';
 import { DatabaseModule } from './database/database.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { getCacheConfig } from './configs/cache.config';
 
 @Module({
 	controllers: [AppController],
 	imports: [
+		CacheModule.registerAsync(getCacheConfig()),
 		DatabaseModule,
 		TerminusModule.forRoot(),
 		LoggerModule.forRootAsync(getLoggerConfig()),

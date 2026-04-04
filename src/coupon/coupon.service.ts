@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
-import { DatabaseService } from '../database/database.service';
+import { DatabaseService } from '../common/database/database.service';
 import { CreateCouponRequestDto, CreateCouponResponseDto } from './dto/create-coupon.dto';
 import { CodeConflictException } from './exceptions/code-conflict.exception';
 import { CouponRepositoryMapper } from './mappers/coupon-repository.mapper';

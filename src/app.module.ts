@@ -1,13 +1,13 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
+import { getCacheConfig } from './common/configs/cache.config';
+import { getLoggerConfig } from './common/configs/logger.config';
+import { DatabaseModule } from './common/database/database.module';
 import { environmentSchema } from './common/schemas/environment.schema';
-import { getLoggerConfig } from './configs/logger.config';
-import { DatabaseModule } from './database/database.module';
-import { CacheModule } from '@nestjs/cache-manager';
-import { getCacheConfig } from './configs/cache.config';
 import { CouponModule } from './coupon/coupon.module';
 
 @Module({

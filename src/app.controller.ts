@@ -6,7 +6,7 @@ import {
 	HealthIndicatorResult,
 	PrismaHealthIndicator
 } from '@nestjs/terminus';
-import { DatabaseService } from './database/database.service';
+import { DatabaseService } from './common/database/database.service';
 
 @Controller()
 export class AppController {

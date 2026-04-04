@@ -77,6 +77,10 @@ export default [
 					}
 				},
 				{
+					selector: 'property',
+					format: ['camelCase', 'UPPER_CASE', 'PascalCase']
+				},
+				{
 					selector: 'enumMember',
 					format: ['UPPER_CASE']
 				}

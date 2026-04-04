@@ -19,5 +19,10 @@
 		"noImplicitAny": false,
 		"strictBindCallApply": false,
 		"noFallthroughCasesInSwitch": false
-	}
+	},
+	"references": [
+		{
+			"path": "./tsconfig.spec.json"
+		}
+	]
 }

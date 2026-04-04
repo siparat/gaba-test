@@ -109,7 +109,9 @@ export default [
 		rules: {
 			'@typescript-eslint/explicit-function-return-type': 'off',
 			'@typescript-eslint/no-explicit-any': 'off',
-			'@typescript-eslint/naming-convention': 'off'
+			'@typescript-eslint/naming-convention': 'off',
+			'unicorn/no-useless-undefined': 'off',
+			'unicorn/no-null': 'off'
 		}
 	},
 

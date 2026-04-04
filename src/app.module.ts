@@ -8,7 +8,7 @@ import { getCacheConfig } from './common/configs/cache.config';
 import { getLoggerConfig } from './common/configs/logger.config';
 import { DatabaseModule } from './common/database/database.module';
 import { environmentSchema } from './common/schemas/environment.schema';
-import { CouponsModule } from './coupon/coupons.module';
+import { CouponsModule } from './coupons/coupons.module';
 
 @Module({
 	controllers: [AppController],

@@ -13,7 +13,7 @@ import {
 import { ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { createZodDto, ZodValidationPipe } from 'nestjs-zod';
 import { IdempotencyInterceptor } from '../common/interceptors/idempotency.interceptor';
-import { CouponService } from './coupon.service';
+import { CouponsService } from './coupons.service';
 import { CreateCouponRequestDto, CreateCouponResponseDto } from './dto/create-coupon.dto';
 import { UpdateCouponRequestDto, UpdateCouponResponseDto } from './dto/update-coupon.dto';
 import { ApiCodeConflictException } from './exceptions/code-conflict.exception';
@@ -24,8 +24,8 @@ import { couponSchema } from './schemas/coupon.schema';
 import { GetListCouponsRequestDto, GetListCouponsResponseDto } from './dto/list-coupon.dto';
 
 @Controller('coupons')
-export class CouponController {
-	constructor(private readonly couponService: CouponService) {}
+export class CouponsController {
+	constructor(private readonly couponService: CouponsService) {}
 
 	@ApiHeader({ name: 'idempotency-key' })
 	@ApiCreatedResponse({ type: CreateCouponResponseDto })

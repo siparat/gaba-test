@@ -8,7 +8,7 @@ import { getCacheConfig } from './common/configs/cache.config';
 import { getLoggerConfig } from './common/configs/logger.config';
 import { DatabaseModule } from './common/database/database.module';
 import { environmentSchema } from './common/schemas/environment.schema';
-import { CouponModule } from './coupon/coupon.module';
+import { CouponsModule } from './coupon/coupons.module';
 
 @Module({
 	controllers: [AppController],
@@ -21,7 +21,7 @@ import { CouponModule } from './coupon/coupon.module';
 			isGlobal: true,
 			validate: (config) => environmentSchema.parse(config)
 		}),
-		CouponModule
+		CouponsModule
 	]
 })
 export class AppModule {}

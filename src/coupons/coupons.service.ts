@@ -13,7 +13,7 @@ import { CouponNotFoundException } from './exceptions/coupon-not-found.exception
 import { GetListCouponsRequestDto, GetListCouponsResponseDto } from './dto/list-coupon.dto';
 
 @Injectable()
-export class CouponService {
+export class CouponsService {
 	constructor(
 		private database: DatabaseService,
 		private logger: Logger,

@@ -3,7 +3,13 @@ import z from 'zod';
 import { couponSchema } from '../schemas/coupon.schema';
 
 export const createCouponRequestSchema = z.object({
-	code: z.string().min(4).max(256).describe('Уникальный код купона, от 4 до 256 символов'),
+	code: z
+		.string()
+		.trim()
+		.regex(/^[a-zA-Z0-9]+$/)
+		.min(4)
+		.max(256)
+		.describe('Уникальный код купона, от 4 до 256 символов, на латинице и цифрха'),
 	discount: z.number().min(1).max(100).describe('Скидка в процентах, от 1 до 100'),
 	maxActivations: z
 		.number()

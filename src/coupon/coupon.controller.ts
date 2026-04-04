@@ -23,7 +23,7 @@ import { Coupon } from '../../generated/prisma/client';
 import { couponSchema } from './schemas/coupon.schema';
 import { GetListCouponsRequestDto, GetListCouponsResponseDto } from './dto/list-coupon.dto';
 
-@Controller('coupon')
+@Controller('coupons')
 export class CouponController {
 	constructor(private readonly couponService: CouponService) {}
 

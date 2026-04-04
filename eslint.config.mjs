@@ -93,6 +93,7 @@ export default [
 			...unicorn.configs.recommended.rules,
 			'unicorn/filename-case': ['error', { case: 'kebabCase' }],
 			'unicorn/prefer-top-level-await': ['off'],
+			'unicorn/no-static-only-class': ['off'],
 			...prettierConfig.rules
 		}
 	},

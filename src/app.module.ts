@@ -8,6 +8,7 @@ import { getLoggerConfig } from './configs/logger.config';
 import { DatabaseModule } from './database/database.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { getCacheConfig } from './configs/cache.config';
+import { CouponModule } from './coupon/coupon.module';
 
 @Module({
 	controllers: [AppController],
@@ -19,7 +20,8 @@ import { getCacheConfig } from './configs/cache.config';
 		ConfigModule.forRoot({
 			isGlobal: true,
 			validate: (config) => environmentSchema.parse(config)
-		})
+		}),
+		CouponModule
 	]
 })
 export class AppModule {}

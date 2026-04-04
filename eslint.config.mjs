@@ -93,7 +93,14 @@ export default [
 			...unicorn.configs.recommended.rules,
 			'unicorn/filename-case': ['error', { case: 'kebabCase' }],
 			'unicorn/prefer-top-level-await': ['off'],
-			...prettierConfig.rules
+			'unicorn/no-static-only-class': ['off'],
+			...prettierConfig.rules,
+			'unicorn/prevent-abbreviations': ['warn', {
+				allowList: {
+					params: true,
+					util: true
+				}
+			}]
 		}
 	},
 
@@ -102,7 +109,9 @@ export default [
 		rules: {
 			'@typescript-eslint/explicit-function-return-type': 'off',
 			'@typescript-eslint/no-explicit-any': 'off',
-			'@typescript-eslint/naming-convention': 'off'
+			'@typescript-eslint/naming-convention': 'off',
+			'unicorn/no-useless-undefined': 'off',
+			'unicorn/no-null': 'off'
 		}
 	},
 

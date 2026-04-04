@@ -5,6 +5,7 @@
 		"removeComments": true,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
+		"strictPropertyInitialization": false,
 		"allowSyntheticDefaultImports": true,
 		"types": ["node"],
 		"target": "ES2023",
@@ -18,5 +19,10 @@
 		"noImplicitAny": false,
 		"strictBindCallApply": false,
 		"noFallthroughCasesInSwitch": false
-	}
+	},
+	"references": [
+		{
+			"path": "./tsconfig.spec.json"
+		}
+	]
 }

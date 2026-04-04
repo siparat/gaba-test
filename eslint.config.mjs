@@ -1,8 +1,8 @@
 import eslint from '@eslint/js';
 import tseslint from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
 import prettierConfig from 'eslint-config-prettier';
-import checkFile from 'eslint-plugin-check-file';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import prettierRecommended from 'eslint-plugin-prettier/recommended';
 import unicorn from 'eslint-plugin-unicorn';
 import globals from 'globals';
 
@@ -10,50 +10,34 @@ export default [
 	{
 		ignores: ['eslint.config.mjs']
 	},
-	tseslint.configs.recommended,
+
 	eslint.configs.recommended,
-	checkFile.configs.recommended,
-	unicorn.configs.recommended,
-	tseslint.configs.recommended,
-	eslintPluginPrettierRecommended,
+
 	{
+		files: ['**/*.ts'],
 		languageOptions: {
+			parser: tsParser,
+			ecmaVersion: 'latest',
+			sourceType: 'module',
 			globals: {
 				...globals.node,
 				...globals.jest
 			},
-			ecmaVersion: 5,
-			sourceType: 'module',
 			parserOptions: {
 				projectService: true,
 				tsconfigRootDir: import.meta.dirname
 			}
-		}
-	},
-	{
-		files: [
-			'**/*.spec.ts',
-			'**/*.test.ts',
-			'**/jest.config.ts',
-			'**/jest.config.cts',
-			'**/jest.preset.js',
-			'eslint.config.mjs'
-		],
+		},
+		plugins: {
+			'@typescript-eslint': tseslint,
+			unicorn
+		},
 		rules: {
-			'@typescript-eslint/explicit-function-return-type': 'off',
-			'@typescript-eslint/no-explicit-any': 'off',
-			'@typescript-eslint/naming-convention': 'off'
-		}
-	},
-	{
-		rules: {
-			'@typescript-eslint/no-explicit-any': 'off',
-			'@typescript-eslint/recommended-type-checked': 'off',
-			'@typescript-eslint/no-unused-expressions': 'off',
-			'@typescript-eslint/no-namespace': 'off',
-			'@typescript-eslint/interface-name-prefix': 'off',
+			...tseslint.configs.recommended.rules,
+
 			'@typescript-eslint/explicit-function-return-type': 'warn',
-			'@typescript-eslint/explicit-module-boundary-types': 'off',
+			'@typescript-eslint/no-explicit-any': 'off',
+			'@typescript-eslint/no-namespace': 'off',
 			'@typescript-eslint/no-unused-vars': [
 				'warn',
 				{
@@ -62,20 +46,7 @@ export default [
 					caughtErrors: 'none'
 				}
 			],
-			'unicorn/filename-case': [
-				'error',
-				{
-					case: 'kebabCase'
-				}
-			],
-			'check-file/folder-naming-convention': [
-				'error',
-				{
-					'**/': 'KEBAB_CASE'
-				}
-			],
-			'@typescript-eslint/no-explicit-any': 'off',
-			...prettierConfig.rules,
+
 			'@typescript-eslint/naming-convention': [
 				'error',
 				{
@@ -86,28 +57,12 @@ export default [
 				},
 				{
 					selector: 'variable',
-					format: ['camelCase', 'UPPER_CASE'],
-					leadingUnderscore: 'allow',
-					trailingUnderscore: 'allow'
+					format: ['camelCase', 'UPPER_CASE']
 				},
 				{
 					selector: 'variable',
 					modifiers: ['const', 'global'],
-					format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
-					leadingUnderscore: 'forbid'
-				},
-				{
-					selector: 'objectLiteralProperty',
-					format: ['camelCase', 'PascalCase', 'UPPER_CASE', 'snake_case']
-				},
-				{
-					selector: 'variable',
-					types: ['boolean'],
-					format: ['camelCase'],
-					custom: {
-						regex: '^(is|has|can|should|must)[A-Z]',
-						match: true
-					}
+					format: ['camelCase', 'UPPER_CASE', 'PascalCase']
 				},
 				{
 					selector: 'typeLike',
@@ -124,16 +79,24 @@ export default [
 				{
 					selector: 'enumMember',
 					format: ['UPPER_CASE']
-				},
-				{
-					selector: 'enum',
-					format: ['PascalCase']
-				},
-				{
-					selector: 'property',
-					format: ['camelCase', 'UPPER_CASE']
 				}
-			]
+			],
+
+			...unicorn.configs.recommended.rules,
+			'unicorn/filename-case': ['error', { case: 'kebabCase' }],
+			'unicorn/prefer-top-level-await': ['off'],
+			...prettierConfig.rules
 		}
-	}
+	},
+
+	{
+		files: ['**/*.spec.ts', '**/*.test.ts', '**/jest.config.ts', '**/jest.config.cts', '**/jest.preset.js'],
+		rules: {
+			'@typescript-eslint/explicit-function-return-type': 'off',
+			'@typescript-eslint/no-explicit-any': 'off',
+			'@typescript-eslint/naming-convention': 'off'
+		}
+	},
+
+	prettierRecommended
 ];

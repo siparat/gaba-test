@@ -39,7 +39,8 @@ export class CouponService {
 
 	async getList(query: GetListCouponsRequestDto): Promise<GetListCouponsResponseDto> {
 		const { page, perPage } = query;
-		const cacheKey = CouponCacheKeys.list(query);
+		const listVersion = (await this.cache.get<number>(CouponCacheKeys.LIST_VERSION)) || 1;
+		const cacheKey = CouponCacheKeys.list(listVersion, query);
 		const cachedValue = await this.cache.get<GetListCouponsResponseDto>(cacheKey);
 		if (cachedValue) {
 			return cachedValue;
@@ -61,7 +62,7 @@ export class CouponService {
 				totalPages: Math.ceil(totalCount / perPage)
 			}
 		};
-		await this.cache.set(cacheKey, coupons, 60_000);
+		await this.cache.set(cacheKey, result, 60_000);
 		return result;
 	}
 
@@ -73,6 +74,10 @@ export class CouponService {
 
 		try {
 			const coupon = await this.database.coupon.create({ data: CouponRepositoryMapper.toCreate(dto) });
+
+			const version = (await this.cache.get<number>(CouponCacheKeys.LIST_VERSION)) || 1;
+			await this.cache.set(CouponCacheKeys.LIST_VERSION, version + 1);
+
 			this.logger.log('Купон создан', { couponId: coupon.id, code: coupon.code, discount: coupon.discount });
 			return coupon;
 		} catch (error) {
@@ -99,6 +104,13 @@ export class CouponService {
 				where: { id },
 				data: CouponRepositoryMapper.toUpdate(dto)
 			});
+
+			const version = (await this.cache.get<number>(CouponCacheKeys.LIST_VERSION)) || 1;
+			await Promise.all([
+				this.cache.set(CouponCacheKeys.LIST_VERSION, version + 1),
+				this.cache.del(CouponCacheKeys.id(coupon.id))
+			]);
+
 			this.logger.log('Купон обновлен', {
 				newData: dto,
 				couponId: id,

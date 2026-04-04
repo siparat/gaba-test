@@ -19,6 +19,23 @@ export class CouponService {
 		private cache: Cache
 	) {}
 
+	async getById(id: string): Promise<Coupon> {
+		const cacheKey = CouponCacheKeys.id(id);
+		const cachedValue = await this.cache.get<Coupon>(cacheKey);
+		if (cachedValue) {
+			return cachedValue;
+		}
+
+		const coupon = await this.database.coupon.findUnique({ where: { id } });
+		if (!coupon) {
+			throw new CouponNotFoundException(id);
+		}
+
+		await this.cache.set(cacheKey, coupon, 60_000);
+
+		return coupon;
+	}
+
 	async create(dto: CreateCouponRequestDto): Promise<CreateCouponResponseDto> {
 		const isAlreadyWithCode = await this.database.coupon.findUnique({ where: { code: dto.code } });
 		if (isAlreadyWithCode) {

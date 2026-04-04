@@ -10,6 +10,7 @@ import { CouponCacheKeys } from './constants/coupon-cache.constants';
 import { Cache } from '@nestjs/cache-manager';
 import { BadDatabaseException } from '../common/exceptions/bad-database.exception';
 import { CouponNotFoundException } from './exceptions/coupon-not-found.exception';
+import { GetListCouponsRequestDto, GetListCouponsResponseDto } from './dto/list-coupon.dto';
 
 @Injectable()
 export class CouponService {
@@ -34,6 +35,34 @@ export class CouponService {
 		await this.cache.set(cacheKey, coupon, 60_000);
 
 		return coupon;
+	}
+
+	async getList(query: GetListCouponsRequestDto): Promise<GetListCouponsResponseDto> {
+		const { page, perPage } = query;
+		const cacheKey = CouponCacheKeys.list(query);
+		const cachedValue = await this.cache.get<GetListCouponsResponseDto>(cacheKey);
+		if (cachedValue) {
+			return cachedValue;
+		}
+
+		const [coupons, totalCount] = await Promise.all([
+			this.database.coupon.findMany({
+				take: perPage,
+				skip: perPage * (page - 1)
+			}),
+			this.database.coupon.count()
+		]);
+
+		const result = {
+			coupons,
+			meta: {
+				page,
+				totalCount,
+				totalPages: Math.ceil(totalCount / perPage)
+			}
+		};
+		await this.cache.set(cacheKey, coupons, 60_000);
+		return result;
 	}
 
 	async create(dto: CreateCouponRequestDto): Promise<CreateCouponResponseDto> {

@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, UseInterceptors, UsePipes } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Param,
+	ParseUUIDPipe,
+	Patch,
+	Post,
+	Query,
+	UseInterceptors,
+	UsePipes
+} from '@nestjs/common';
 import { ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { createZodDto, ZodValidationPipe } from 'nestjs-zod';
 import { IdempotencyInterceptor } from '../common/interceptors/idempotency.interceptor';
@@ -10,6 +21,7 @@ import { ApiCouponNotFoundException } from './exceptions/coupon-not-found.except
 import { ApiBadDatabaseException } from '../common/exceptions/bad-database.exception';
 import { Coupon } from '../../generated/prisma/client';
 import { couponSchema } from './schemas/coupon.schema';
+import { GetListCouponsRequestDto, GetListCouponsResponseDto } from './dto/list-coupon.dto';
 
 @Controller('coupon')
 export class CouponController {
@@ -51,5 +63,12 @@ export class CouponController {
 	@Get(':id')
 	async get(@Param('id', ParseUUIDPipe) id: string): Promise<Coupon> {
 		return this.couponService.getById(id);
+	}
+
+	@ApiOkResponse({ type: GetListCouponsResponseDto })
+	@ApiOperation({ summary: 'Получение списка купонов с пагинацией' })
+	@Get()
+	async list(@Query(ZodValidationPipe) query: GetListCouponsRequestDto): Promise<GetListCouponsResponseDto> {
+		return this.couponService.getList(query);
 	}
 }

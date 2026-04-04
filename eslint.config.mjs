@@ -94,7 +94,13 @@ export default [
 			'unicorn/filename-case': ['error', { case: 'kebabCase' }],
 			'unicorn/prefer-top-level-await': ['off'],
 			'unicorn/no-static-only-class': ['off'],
-			...prettierConfig.rules
+			...prettierConfig.rules,
+			'unicorn/prevent-abbreviations': ['warn', {
+				allowList: {
+					params: true,
+					util: true
+				}
+			}]
 		}
 	},
 

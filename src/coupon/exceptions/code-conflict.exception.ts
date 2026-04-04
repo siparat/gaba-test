@@ -1,4 +1,4 @@
-import { applyDecorators, ConflictException } from '@nestjs/common';
+import { applyDecorators, ConflictException, HttpStatus } from '@nestjs/common';
 import { ApiConflictResponse } from '@nestjs/swagger';
 
 export class CodeConflictException extends ConflictException {
@@ -12,7 +12,7 @@ export const ApiCodeConflictException = (): MethodDecorator => {
 		ApiConflictResponse({
 			schema: {
 				example: {
-					statusCode: 409,
+					statusCode: HttpStatus.CONFLICT,
 					message: 'Купон с кодом ABC123 уже существует',
 					error: CodeConflictException.name
 				}

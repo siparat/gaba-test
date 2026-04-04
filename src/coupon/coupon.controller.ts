@@ -6,6 +6,7 @@ import { CouponService } from './coupon.service';
 import { CreateCouponRequestDto, CreateCouponResponseDto } from './dto/create-coupon.dto';
 import { UpdateCouponRequestDto, UpdateCouponResponseDto } from './dto/update-coupon.dto';
 import { ApiCodeConflictException } from './exceptions/code-conflict.exception';
+import { ApiCouponNotFoundException } from './exceptions/coupon-not-found.exception';
 
 @Controller('coupon')
 export class CouponController {
@@ -25,6 +26,7 @@ export class CouponController {
 
 	@ApiHeader({ name: 'idempotency-key' })
 	@ApiCreatedResponse({ type: UpdateCouponResponseDto })
+	@ApiCouponNotFoundException()
 	@ApiCodeConflictException()
 	@ApiOperation({ summary: 'Изменение купона' })
 	@UseInterceptors(IdempotencyInterceptor)

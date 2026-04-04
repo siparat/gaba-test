@@ -5,12 +5,18 @@ import { CreateCouponRequestDto, CreateCouponResponseDto } from './dto/create-co
 import { UpdateCouponRequestDto } from './dto/update-coupon.dto';
 import { CodeConflictException } from './exceptions/code-conflict.exception';
 import { CouponRepositoryMapper } from './mappers/coupon-repository.mapper';
+import { Coupon } from '../../generated/prisma/client';
+import { CouponCacheKeys } from './constants/coupon-cache.constants';
+import { Cache } from '@nestjs/cache-manager';
+import { BadDatabaseException } from '../common/exceptions/bad-database.exception';
+import { CouponNotFoundException } from './exceptions/coupon-not-found.exception';
 
 @Injectable()
 export class CouponService {
 	constructor(
 		private database: DatabaseService,
-		private logger: Logger
+		private logger: Logger,
+		private cache: Cache
 	) {}
 
 	async create(dto: CreateCouponRequestDto): Promise<CreateCouponResponseDto> {
@@ -19,9 +25,14 @@ export class CouponService {
 			throw new CodeConflictException(dto.code);
 		}
 
-		const coupon = await this.database.coupon.create({ data: CouponRepositoryMapper.toCreate(dto) });
-		this.logger.log('Купон создан', { couponId: coupon.id, code: coupon.code, discount: coupon.discount });
-		return coupon;
+		try {
+			const coupon = await this.database.coupon.create({ data: CouponRepositoryMapper.toCreate(dto) });
+			this.logger.log('Купон создан', { couponId: coupon.id, code: coupon.code, discount: coupon.discount });
+			return coupon;
+		} catch (error) {
+			this.logger.error(error);
+			throw new BadDatabaseException();
+		}
 	}
 
 	async update(id: string, dto: UpdateCouponRequestDto): Promise<CreateCouponResponseDto> {
@@ -32,13 +43,26 @@ export class CouponService {
 			}
 		}
 
-		const coupon = await this.database.coupon.update({ where: { id }, data: CouponRepositoryMapper.toUpdate(dto) });
-		this.logger.log('Купон обновлен', {
-			newData: dto,
-			couponId: id,
-			code: coupon.code,
-			discount: coupon.discount
-		});
-		return coupon;
+		const isExistsCoupon = await this.database.coupon.findUnique({ where: { id } });
+		if (!isExistsCoupon) {
+			throw new CouponNotFoundException(id);
+		}
+
+		try {
+			const coupon = await this.database.coupon.update({
+				where: { id },
+				data: CouponRepositoryMapper.toUpdate(dto)
+			});
+			this.logger.log('Купон обновлен', {
+				newData: dto,
+				couponId: id,
+				code: coupon.code,
+				discount: coupon.discount
+			});
+			return coupon;
+		} catch (error) {
+			this.logger.error(error);
+			throw new BadDatabaseException();
+		}
 	}
 }

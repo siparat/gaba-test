@@ -23,6 +23,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Generate prisma types
+        run: npm run generate
+
       - name: Build
         run: npm run build
 

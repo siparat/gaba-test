@@ -2,6 +2,8 @@ import {
 	Body,
 	Controller,
 	Get,
+	HttpCode,
+	HttpStatus,
 	Param,
 	ParseUUIDPipe,
 	Patch,
@@ -22,6 +24,9 @@ import { ApiBadDatabaseException } from '../common/exceptions/bad-database.excep
 import { Coupon } from '../../generated/prisma/client';
 import { couponSchema } from './schemas/coupon.schema';
 import { GetListCouponsRequestDto, GetListCouponsResponseDto } from './dto/list-coupon.dto';
+import { ActivateCouponRequestDto, ActivateCouponResponseDto } from './dto/activate-coupon.dto';
+import { ApiMaxCouponActivatesException } from './exceptions/max-coupon-activates.exception';
+import { ApiAlreadyActivatesException } from './exceptions/already-activates.exception';
 
 @Controller('coupons')
 export class CouponsController {
@@ -31,7 +36,7 @@ export class CouponsController {
 	@ApiCreatedResponse({ type: CreateCouponResponseDto })
 	@ApiCodeConflictException()
 	@ApiBadDatabaseException()
-	@ApiOperation({ summary: 'Создание купона' })
+	@ApiOperation({ summary: 'Создание промокода' })
 	@UseInterceptors(IdempotencyInterceptor)
 	@UsePipes(ZodValidationPipe)
 	@Post()
@@ -45,7 +50,7 @@ export class CouponsController {
 	@ApiCouponNotFoundException()
 	@ApiCodeConflictException()
 	@ApiBadDatabaseException()
-	@ApiOperation({ summary: 'Изменение купона' })
+	@ApiOperation({ summary: 'Изменение промокода' })
 	@UseInterceptors(IdempotencyInterceptor)
 	@UsePipes(ZodValidationPipe)
 	@Patch(':id')
@@ -59,16 +64,28 @@ export class CouponsController {
 
 	@ApiOkResponse({ type: createZodDto(couponSchema) })
 	@ApiCouponNotFoundException()
-	@ApiOperation({ summary: 'Получение купона по id' })
+	@ApiOperation({ summary: 'Получение промокода по id' })
 	@Get(':id')
 	async get(@Param('id', ParseUUIDPipe) id: string): Promise<Coupon> {
 		return this.couponService.getById(id);
 	}
 
 	@ApiOkResponse({ type: GetListCouponsResponseDto })
-	@ApiOperation({ summary: 'Получение списка купонов с пагинацией' })
+	@ApiOperation({ summary: 'Получение списка промокодов с пагинацией' })
 	@Get()
 	async list(@Query(ZodValidationPipe) query: GetListCouponsRequestDto): Promise<GetListCouponsResponseDto> {
-		return this.couponService.getList(query);
+		const list = await this.couponService.getList(query);
+		return GetListCouponsResponseDto.schema.parseAsync(list);
+	}
+
+	@ApiMaxCouponActivatesException()
+	@ApiAlreadyActivatesException()
+	@ApiOperation({ summary: 'Активация промокода по коду' })
+	@HttpCode(HttpStatus.OK)
+	@UsePipes(ZodValidationPipe)
+	@Post('activate')
+	async activate(@Body() { email, code }: ActivateCouponRequestDto): Promise<ActivateCouponResponseDto> {
+		await this.couponService.activate(email, code);
+		return { success: true };
 	}
 }

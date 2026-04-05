@@ -1,9 +1,19 @@
 model Coupon {
-    id             String   @id @default(uuid())
-    code           String   @unique
-    discount       Int
-    activatedCount Int      @default(0)
-    maxActivations Int
-    expiredAt      DateTime
-    createdAt      DateTime @default(now())
+    id              String           @id @default(uuid())
+    code            String           @unique
+    discount        Int
+    activatedCount  Int              @default(0)
+    maxActivations  Int
+    expiredAt       DateTime
+    createdAt       DateTime         @default(now())
+    activates 		CouponActivate[]
+}
+
+model CouponActivate {
+    email       String
+    couponId    String
+    coupon      Coupon   @relation(fields: [couponId], references: [id])
+    activatedAt DateTime @default(now())
+
+    @@id([email, couponId])
 }

@@ -14,6 +14,8 @@ import { CodeConflictException } from './exceptions/code-conflict.exception';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { CreateCouponRequestDto } from './dto/create-coupon.dto';
 import { BadDatabaseException } from '../common/exceptions/bad-database.exception';
+import { MaxCouponActivatesException } from './exceptions/max-coupon-activates.exception';
+import { AlreadyActivatesException } from './exceptions/already-activates.exception';
 
 describe('CouponsService', () => {
 	let service: CouponsService;
@@ -159,6 +161,70 @@ describe('CouponsService', () => {
 			expect(cache.set).toHaveBeenCalledWith(CouponCacheKeys.LIST_VERSION, 2);
 			expect(cache.del).toHaveBeenCalledWith(CouponCacheKeys.id(coupon.id));
 			expect(logger.log).toHaveBeenCalled();
+		});
+	});
+
+	describe('activate', () => {
+		const email = faker.internet.email();
+
+		it('should activate coupon and log success', async () => {
+			const tx = createMock<DatabaseService>();
+			tx.coupon.findUnique.mockResolvedValueOnce(coupon);
+			tx.coupon.updateMany.mockResolvedValueOnce({ count: 1 });
+			tx.couponActivate.create.mockResolvedValueOnce({
+				email,
+				couponId: coupon.id,
+				activatedAt: new Date()
+			});
+			database.$transaction.mockImplementationOnce(async (callback) => callback(tx));
+
+			await expect(service.activate(email, coupon.code)).resolves.toBeUndefined();
+			expect(tx.coupon.findUnique).toHaveBeenCalledWith({ where: { code: coupon.code } });
+			expect(tx.coupon.updateMany).toHaveBeenCalledWith({
+				where: {
+					id: coupon.id,
+					activatedCount: { lt: coupon.maxActivations }
+				},
+				data: {
+					activatedCount: { increment: 1 }
+				}
+			});
+			expect(tx.couponActivate.create).toHaveBeenCalledWith({
+				data: { email, couponId: coupon.id }
+			});
+			expect(logger.log).toHaveBeenCalled();
+		});
+
+		it('should throw MaxCouponActivatesException if coupon does not exist', async () => {
+			const tx = createMock<DatabaseService>();
+			tx.coupon.findUnique.mockResolvedValueOnce(null);
+			database.$transaction.mockImplementationOnce(async (callback) => callback(tx));
+
+			await expect(service.activate(email, coupon.code)).rejects.toThrow(MaxCouponActivatesException);
+			expect(tx.coupon.updateMany).not.toHaveBeenCalled();
+			expect(logger.log).not.toHaveBeenCalled();
+		});
+
+		it('should throw MaxCouponActivatesException if max activations reached', async () => {
+			const tx = createMock<DatabaseService>();
+			tx.coupon.findUnique.mockResolvedValueOnce(coupon);
+			tx.coupon.updateMany.mockResolvedValueOnce({ count: 0 });
+			database.$transaction.mockImplementationOnce(async (callback) => callback(tx));
+
+			await expect(service.activate(email, coupon.code)).rejects.toThrow(MaxCouponActivatesException);
+			expect(tx.couponActivate.create).not.toHaveBeenCalled();
+			expect(logger.log).not.toHaveBeenCalled();
+		});
+
+		it('should throw AlreadyActivatesException when activation already exists', async () => {
+			const tx = createMock<DatabaseService>();
+			tx.coupon.findUnique.mockResolvedValueOnce(coupon);
+			tx.coupon.updateMany.mockResolvedValueOnce({ count: 1 });
+			tx.couponActivate.create.mockRejectedValueOnce(new Error('duplicate key'));
+			database.$transaction.mockImplementationOnce(async (callback) => callback(tx));
+
+			await expect(service.activate(email, coupon.code)).rejects.toThrow(AlreadyActivatesException);
+			expect(logger.log).not.toHaveBeenCalled();
 		});
 	});
 });

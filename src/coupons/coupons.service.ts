@@ -11,6 +11,8 @@ import { Cache } from '@nestjs/cache-manager';
 import { BadDatabaseException } from '../common/exceptions/bad-database.exception';
 import { CouponNotFoundException } from './exceptions/coupon-not-found.exception';
 import { GetListCouponsRequestDto, GetListCouponsResponseDto } from './dto/list-coupon.dto';
+import { MaxCouponActivatesException } from './exceptions/max-coupon-activates.exception';
+import { AlreadyActivatesException } from './exceptions/already-activates.exception';
 
 @Injectable()
 export class CouponsService {
@@ -78,7 +80,7 @@ export class CouponsService {
 			const version = (await this.cache.get<number>(CouponCacheKeys.LIST_VERSION)) || 1;
 			await this.cache.set(CouponCacheKeys.LIST_VERSION, version + 1);
 
-			this.logger.log('Купон создан', { couponId: coupon.id, code: coupon.code, discount: coupon.discount });
+			this.logger.log('Промокод создан', { couponId: coupon.id, code: coupon.code, discount: coupon.discount });
 			return coupon;
 		} catch (error) {
 			this.logger.error(error);
@@ -111,7 +113,7 @@ export class CouponsService {
 				this.cache.del(CouponCacheKeys.id(coupon.id))
 			]);
 
-			this.logger.log('Купон обновлен', {
+			this.logger.log('Промокод обновлен', {
 				newData: dto,
 				couponId: id,
 				code: coupon.code,
@@ -122,5 +124,41 @@ export class CouponsService {
 			this.logger.error(error);
 			throw new BadDatabaseException();
 		}
+	}
+
+	async activate(email: string, code: string): Promise<void> {
+		await this.database.$transaction(async (tx) => {
+			const coupon = await tx.coupon.findUnique({
+				where: { code }
+			});
+
+			if (!coupon) {
+				throw new MaxCouponActivatesException(code);
+			}
+
+			const updated = await tx.coupon.updateMany({
+				where: {
+					id: coupon.id,
+					activatedCount: { lt: coupon.maxActivations }
+				},
+				data: {
+					activatedCount: { increment: 1 }
+				}
+			});
+
+			if (updated.count === 0) {
+				throw new MaxCouponActivatesException(code);
+			}
+
+			try {
+				await tx.couponActivate.create({
+					data: { email, couponId: coupon.id }
+				});
+			} catch {
+				throw new AlreadyActivatesException();
+			}
+		});
+
+		this.logger.log('Промокод активирован', { code, email });
 	}
 }

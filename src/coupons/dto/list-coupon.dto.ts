@@ -3,8 +3,8 @@ import z from 'zod';
 import { couponSchema } from '../schemas/coupon.schema';
 
 export const getListCouponsRequestSchema = z.object({
-	page: z.coerce.number().positive().default(1).describe('Страница с купонами'),
-	perPage: z.coerce.number().positive().max(30).default(20).describe('Количество купонов на странице')
+	page: z.coerce.number().positive().default(1).describe('Страница с промокодами'),
+	perPage: z.coerce.number().positive().max(30).default(20).describe('Количество промокодов на странице')
 });
 
 export class GetListCouponsRequestDto extends createZodDto(getListCouponsRequestSchema) {}
